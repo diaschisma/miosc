@@ -7,6 +7,7 @@ pub enum MioscMessage {
     Reference(f32),
     NoteOn(i32, f32, f32),
     NoteOff(i32),
+    Pitch(i32, f32, f32),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -39,6 +40,14 @@ impl From<MioscMessage> for rosc::OscMessage {
                 addr: "/m/note_off".into(),
                 args: Some(vec![
                     OscType::Int(id),
+                ]),
+            },
+            Pitch(id, pitch, time) => OscMessage {
+                addr: "/m/pitch".into(),
+                args: Some(vec![
+                    OscType::Int(id),
+                    OscType::Float(pitch),
+                    OscType::Float(time),
                 ]),
             },
         }
@@ -87,6 +96,16 @@ pub fn into_miosc(msg: rosc::OscMessage) -> Result<MioscMessage, MioscError> {
             let id = pop_integer(&mut args)?;
 
             Ok(MioscMessage::NoteOff(id))
+        },
+        "/m/pitch" => {
+            let mut args = args.ok_or(MioscError::InvalidMessage)?;
+            if args.len() != 3 { return Err(MioscError::InvalidMessage) }
+
+            let time = pop_float(&mut args)?;
+            let pitch = pop_float(&mut args)?;
+            let id = pop_integer(&mut args)?;
+
+            Ok(MioscMessage::Pitch(id, pitch, time))
         },
         _ => Err(MioscError::UnknownMessage),
     }
