@@ -4,4 +4,4 @@ version = "0.1.0"
 authors = ["Сухарик <suhr@i2pmail.org>"]
 
 [dependencies]
-rosc = "0.1"
+rosc = "0.3"

@@ -1,6 +1,6 @@
 extern crate rosc;
 
-use rosc::{OscType};
+use rosc::OscType;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum MioscMessage {
@@ -18,37 +18,37 @@ pub enum MioscError {
 
 impl From<MioscMessage> for rosc::OscMessage {
     fn from(source: MioscMessage) -> Self {
-        use rosc::{OscMessage, OscType};
+        use rosc::{OscMessage};
         use MioscMessage::*;
 
         match source {
             Reference(pitch) => OscMessage {
                 addr: "/m/reference".into(),
-                args: Some(vec![
+                args: vec![
                     OscType::Float(pitch)
-                ]),
+                ],
             },
             NoteOn(id, pitch, vel) => OscMessage {
                 addr: "/m/note_on".into(),
-                args: Some(vec![
+                args: vec![
                     OscType::Int(id),
                     OscType::Float(pitch),
                     OscType::Float(vel),
-                ]),
+                ],
             },
             NoteOff(id) => OscMessage {
                 addr: "/m/note_off".into(),
-                args: Some(vec![
+                args: vec![
                     OscType::Int(id),
-                ]),
+                ],
             },
             Pitch(id, pitch, time) => OscMessage {
                 addr: "/m/pitch".into(),
-                args: Some(vec![
+                args: vec![
                     OscType::Int(id),
                     OscType::Float(pitch),
                     OscType::Float(time),
-                ]),
+                ],
             },
         }
     }
@@ -69,10 +69,9 @@ fn pop_integer(vec: &mut Vec<rosc::OscType>) -> Result<i32, MioscError> {
 }
 
 pub fn into_miosc(msg: rosc::OscMessage) -> Result<MioscMessage, MioscError> {
-    let (addr, args) = (msg.addr, msg.args);
+    let (addr, mut args) = (msg.addr, msg.args);
     match &*addr {
         "/m/reference" => {
-            let mut args = args.ok_or(MioscError::InvalidMessage)?;
             if args.len() != 1 { return Err(MioscError::InvalidMessage) }
 
             let reference = pop_float(&mut args)?;
@@ -80,7 +79,6 @@ pub fn into_miosc(msg: rosc::OscMessage) -> Result<MioscMessage, MioscError> {
             Ok(MioscMessage::Reference(reference))
         },
         "/m/note_on" => {
-            let mut args = args.ok_or(MioscError::InvalidMessage)?;
             if args.len() != 3 { return Err(MioscError::InvalidMessage) }
 
             let vel = pop_float(&mut args)?;
@@ -90,7 +88,6 @@ pub fn into_miosc(msg: rosc::OscMessage) -> Result<MioscMessage, MioscError> {
             Ok(MioscMessage::NoteOn(id, pitch, vel))
         },
         "/m/note_off" => {
-            let mut args = args.ok_or(MioscError::InvalidMessage)?;
             if args.len() != 1 { return Err(MioscError::InvalidMessage) }
 
             let id = pop_integer(&mut args)?;
@@ -98,7 +95,6 @@ pub fn into_miosc(msg: rosc::OscMessage) -> Result<MioscMessage, MioscError> {
             Ok(MioscMessage::NoteOff(id))
         },
         "/m/pitch" => {
-            let mut args = args.ok_or(MioscError::InvalidMessage)?;
             if args.len() != 3 { return Err(MioscError::InvalidMessage) }
 
             let time = pop_float(&mut args)?;
