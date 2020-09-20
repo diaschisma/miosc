@@ -1,4 +1,4 @@
-extern crate rosc;
+pub use rosc;
 
 use rosc::OscType;
 
